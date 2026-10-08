@@ -23,7 +23,7 @@ export class UserFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.sharingData.erroruserFormEventEmitter.subscribe(errors => this.errors = errors);
+    this.sharingData.errorUserFormEventEmitter.subscribe(errors => this.errors = errors);
     this.sharingData.selectUserEventEmitter.subscribe(user => this.user = user);
 
     this.route.paramMap.subscribe(params => {

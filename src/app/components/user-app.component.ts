@@ -1,17 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { NavbarComponent } from './navbar/navbar.component';
 import { Router, RouterOutlet } from '@angular/router';
+import { SharingDataService } from '../services/sharing-data.service';
 import { User } from '../models/user';
 import { UserService } from '../services/user.service';
-import { SharingDataService } from '../services/sharing-data.service';
+
 import Swal from 'sweetalert2';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'user-app',
   standalone: true,
   imports: [NavbarComponent, RouterOutlet],
   templateUrl: './user-app.component.html',
-  styleUrl: './user-app.component.css'
+  styleUrl: './user-app.component.css',
 })
 export class UserAppComponent implements OnInit {
   users: User[] = [];
@@ -20,7 +22,8 @@ export class UserAppComponent implements OnInit {
   constructor(
     private router: Router,
     private userService: UserService,
-    private sharingData: SharingDataService,
+    private sharingDataService: SharingDataService,
+    private authService: AuthService,
     // private route: ActivatedRoute,
   ) {}
 
@@ -35,31 +38,71 @@ export class UserAppComponent implements OnInit {
     this.findUserById();
     this.removeUser();
     this.pageUsersEvent();
+    this.loginHandler();
+  }
+
+  loginHandler() {
+    this.sharingDataService.handlerLoginEventEmitter.subscribe(
+      ({ username, password }) => {
+        //console.log(username + ' + ' + password);
+
+        this.authService.loginUser({ username, password }).subscribe({
+          next: (response) => {
+            const token = response.token;
+            //console.log(token);
+            const payload = this.authService.getPayload(token);
+            //console.log(payload);
+            const user = { username: payload.sub };
+            const login = {
+              user: user,
+              isAuth: true,
+              isAdmin: payload.isAdmin,
+            };
+
+            this.authService.token = token;
+            this.authService.user = login;
+            this.router.navigate(['/users/page/0']);
+          },
+          error: (error) => {
+            if (error.status == 401) {
+              console.log(error.error);
+              Swal.fire(
+                'Error en el login',
+                'username o password incorrectos!',
+                'error',
+              );
+            } else {
+              throw error;
+            }
+          },
+        });
+      },
+    );
   }
 
   pageUsersEvent() {
-    this.sharingData.pageUsersEventEmitter.subscribe((pageable) => {
+    this.sharingDataService.pageUsersEventEmitter.subscribe((pageable) => {
       this.users = pageable.users;
       this.paginator = pageable.paginator;
     });
   }
 
   findUserById() {
-    this.sharingData.findUserByIdEventEmitter.subscribe((id) => {
+    this.sharingDataService.findUserByIdEventEmitter.subscribe((id) => {
       const user = this.users.find((user) => user.id == id);
-      this.sharingData.selectUserEventEmitter.emit(user);
+      this.sharingDataService.selectUserEventEmitter.emit(user);
     });
   }
 
   addUser() {
-    this.sharingData.newUserEventEmitter.subscribe((user) => {
+    this.sharingDataService.newUserEventEmitter.subscribe((user) => {
       if (user.id > 0) {
         this.userService.update(user).subscribe({
           next: (userUpdated) => {
             this.users = this.users.map((u) =>
               u.id == userUpdated.id ? { ...userUpdated } : u,
             );
-            this.router.navigate(['/users'], {
+            this.router.navigate(['/users/page/0'], {
               state: {
                 users: this.users,
                 paginator: this.paginator,
@@ -75,7 +118,7 @@ export class UserAppComponent implements OnInit {
             //console.log(err.error)
             //console.log(err.status)
             if (err.status == 400) {
-              this.sharingData.erroruserFormEventEmitter.emit(err.error);
+              this.sharingDataService.errorUserFormEventEmitter.emit(err.error);
             }
           },
         });
@@ -84,7 +127,7 @@ export class UserAppComponent implements OnInit {
           next: (userNew) => {
             console.log(user);
             this.users = [...this.users, { ...userNew }];
-            this.router.navigate(['/users'], {
+            this.router.navigate(['/users/page/0'], {
               state: {
                 users: this.users,
                 paginator: this.paginator,
@@ -98,7 +141,7 @@ export class UserAppComponent implements OnInit {
           },
           error: (err) => {
             if (err.status == 400) {
-              this.sharingData.erroruserFormEventEmitter.emit(err.error);
+              this.sharingDataService.errorUserFormEventEmitter.emit(err.error);
             }
           },
         });
@@ -107,7 +150,7 @@ export class UserAppComponent implements OnInit {
   }
 
   removeUser(): void {
-    this.sharingData.idUserEventEmitter.subscribe((id) => {
+    this.sharingDataService.idUserEventEmitter.subscribe((id) => {
       Swal.fire({
         title: 'Seguro que quiere eliminar?',
         text: 'Cuidado el usuario sera eliminado del sistema!',

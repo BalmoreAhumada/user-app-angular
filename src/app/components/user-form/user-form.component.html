@@ -1,71 +1,112 @@
 <div class="card">
   <div class="card-content">
     <div class="card-header">
-      <h5 class="card-title">Form {{(user.id > 0)? 'Update': 'Create'}} User</h5>
+      <h5 class="card-title">
+        Form {{ user.id > 0 ? "Update" : "Create" }} User
+      </h5>
     </div>
     <div class="card-body">
-
       <form (ngSubmit)="onSubmit(userForm)" #userForm="ngForm">
-
         <div>
-          <input placeholder="Name" name="name" [(ngModel)]="user.name" class="form-control my-2" #name="ngModel">
+          <input
+            placeholder="Name"
+            name="name"
+            [(ngModel)]="user.name"
+            class="form-control my-2"
+            #name="ngModel"
+          />
           @if (errors?.name) {
-          <div class="text-danger">
-            {{errors.name}}
-          </div>
+            <div class="text-danger">
+              {{ errors.name }}
+            </div>
           }
         </div>
 
         <div>
-          <input placeholder="Lastname" name="lastname" [(ngModel)]="user.lastname" class="form-control my-2"
-            #lastname="ngModel">
+          <input
+            placeholder="Lastname"
+            name="lastname"
+            [(ngModel)]="user.lastname"
+            class="form-control my-2"
+            #lastname="ngModel"
+          />
           @if (errors?.lastname) {
-          <div class="text-danger">
-            {{errors.lastname}}
-          </div>
+            <div class="text-danger">
+              {{ errors.lastname }}
+            </div>
           }
         </div>
 
         <div>
-          <input placeholder="Email" name="email" [(ngModel)]="user.email" class="form-control my-2" type="email"
-            #email="ngModel">
+          <input
+            placeholder="Email"
+            name="email"
+            [(ngModel)]="user.email"
+            class="form-control my-2"
+            type="email"
+            #email="ngModel"
+          />
           @if (errors?.email) {
-          <div class="text-danger">
-            {{errors.email}}
-          </div>
+            <div class="text-danger">
+              {{ errors.email }}
+            </div>
           }
         </div>
         <div>
-          <input placeholder="Username" name="username" [(ngModel)]="user.username" class="form-control my-2"
-            #username="ngModel">
+          <input
+            placeholder="Username"
+            name="username"
+            [(ngModel)]="user.username"
+            class="form-control my-2"
+            #username="ngModel"
+          />
           @if (errors?.username) {
-          <div class="text-danger">
-            {{errors.username}}
-          </div>
+            <div class="text-danger">
+              {{ errors.username }}
+            </div>
           }
         </div>
 
-        <div>
-          <input placeholder="Password" name="password" type="password" [(ngModel)]="user.password"
-            class="form-control my-2" #password="ngModel">
-          @if (errors?.password) {
-          <div class="text-danger">
-            {{errors.password}}
+        @if(!(user.id == 0)){
+          <div>
+            <input
+              placeholder="Password"
+              name="password"
+              type="password"
+              [(ngModel)]="user.password"
+              class="form-control my-2"
+              #password="ngModel"
+            />
+            @if (errors?.password) {
+              <div class="text-danger">
+                {{ errors.password }}
+              </div>
+            }
           </div>
-          }
+        }
+        <div class="form-check my-2">
+          <input
+            type="checkbox"
+            name="admin"
+            class="form-check-input"
+            [(ngModel)]="user.admin"
+          />
+          <label class="form-check-label">Admin</label>
         </div>
 
         <div>
           <button type="submit" class="btn btn-primary m-2">
-            {{(user.id > 0)? 'Update': 'Create'}}
+            {{ user.id > 0 ? "Update" : "Create" }}
           </button>
-          <button type="button" class="btn btn-secondary my-2" (click)="onClear(userForm)">
+          <button
+            type="button"
+            class="btn btn-secondary my-2"
+            (click)="onClear(userForm)"
+          >
             Clear
           </button>
         </div>
-
       </form>
     </div>
-
   </div>
 </div>

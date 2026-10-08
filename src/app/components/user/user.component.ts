@@ -4,6 +4,7 @@ import { UserService } from '../../services/user.service';
 import { SharingDataService } from '../../services/sharing-data.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PaginatorComponent } from '../paginator/paginator.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-user',
@@ -22,6 +23,7 @@ export class UserComponent implements OnInit {
   constructor(
     private userService: UserService,
     private sharingData: SharingDataService,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
   ) {
@@ -37,14 +39,18 @@ export class UserComponent implements OnInit {
       // this.service.findAll().subscribe(users => this.users = users);
       this.route.paramMap.subscribe(params => {
         const page = +(params.get('page') || 0);
-        console.log("pagina", page)
         this.userService.findAllPageable(page).subscribe(pageable => {
           this.users = pageable.content as User[];
-          this.paginator = pageable;//este objeto contiene toda la informacion de la paginacion, como el total de paginas, el numero de pagina actual, etc.
+          this.paginator = pageable;//este objeto contiene toda la información de la paginación, como el total de páginas, el número de página actual, etc.
           this.sharingData.pageUsersEventEmitter.emit({ users: this.users, paginator: this.paginator });
         });
       })
     }
+  }
+
+
+  get admin(){
+    return this.authService.isAdmin();
   }
 
   onRemoveUser(id: number): void {
